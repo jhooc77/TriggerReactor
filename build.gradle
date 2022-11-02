@@ -44,6 +44,7 @@ subprojects {
                 srcDirs = ['src/main/resources']
                 include '**/*.js'
                 include '**/*.yml'
+                include '**/*.json'
             }
         }
 
@@ -135,6 +136,7 @@ allprojects {
         targetCompatibility = JavaVersion.VERSION_1_8
     }
     testLegacy.finalizedBy test
+    setProperty("version", "3.3.1-Release")
 }
 
 def exportedProjects= [

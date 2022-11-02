@@ -1,0 +1,44 @@
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://jitpack.io"
+    }
+}
+
+dependencies {
+    api project(":core")
+
+    testImplementation project(':core').sourceSets.test.output
+
+    implementation 'com.github.Minestom:Minestom:b37bef427f'
+
+    compileOnly 'org.yaml:snakeyaml:1.33'
+
+    testImplementation 'org.yaml:snakeyaml:1.33'
+}
+
+jar {
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
+
+    from {
+        String[] include = [
+                "${project(':core').archivesBaseName}${project.version ==  "" ? "" : "-" + project.version}.jar",
+                "commons-lang3-3.12.0.jar"
+        ]
+
+        configurations.runtimeClasspath
+                .findAll { include.contains(it.name) }
+                .collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    dependsOn project(':core').jar
+}
+
+processResources {
+    filesMatching('**/extension.json') {
+        expand(project.properties)
+    }
+}

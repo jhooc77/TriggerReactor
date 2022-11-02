@@ -1,0 +1,13 @@
+{
+  "entrypoint": "io.github.wysohn.triggerreactor.minestom.main.TriggerReactor",
+  "name": "TriggerReactor",
+  "version": "${project.version}",
+  "externalDependencies": {
+    "repositories": [
+      {"name": "Central", "url": "https://repo1.maven.org/maven2/"}
+    ],
+    "artifacts": [
+      "org.yaml:snakeyaml:1.33"
+    ]
+  }
+}

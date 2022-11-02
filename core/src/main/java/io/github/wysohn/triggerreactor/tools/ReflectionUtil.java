@@ -26,8 +26,9 @@ import java.util.stream.Stream;
 
 public class ReflectionUtil {
     public static void setField(Object obj, String fieldName, Object value) throws NoSuchFieldException, IllegalArgumentException {
-        Class<?> clazz = obj.getClass();
-
+        setField(obj.getClass(), obj, fieldName, value);
+    }
+    public static void setField(Class<?> clazz, Object obj, String fieldName, Object value) throws NoSuchFieldException, IllegalArgumentException {
         Field field = clazz.getDeclaredField(fieldName);
         field.setAccessible(true);
 
@@ -62,7 +63,7 @@ public class ReflectionUtil {
 
         Field modifiersField = null;
         try {
-            modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField = getModifiersField();
         } catch (SecurityException e1) {
             e1.printStackTrace();
         }
@@ -522,6 +523,28 @@ public class ReflectionUtil {
             return index < varArgIndex ? paramTypes[index] : varArgType;
         } else {
             return paramTypes[index];
+        }
+    }
+
+    private static Field getModifiersField() throws NoSuchFieldException {
+        try {
+            return Field.class.getDeclaredField("modifiers");
+        }
+        catch (NoSuchFieldException e) {
+            try {
+                Method getDeclaredFields0 = Class.class.getDeclaredMethod("getDeclaredFields0", boolean.class);
+                getDeclaredFields0.setAccessible(true);
+                Field[] fields = (Field[]) getDeclaredFields0.invoke(Field.class, false);
+                for (Field field : fields) {
+                    if ("modifiers".equals(field.getName())) {
+                        return field;
+                    }
+                }
+            }
+            catch (ReflectiveOperationException ex) {
+                e.addSuppressed(ex);
+            }
+            throw e;
         }
     }
 

@@ -101,9 +101,9 @@ public class PermissionManager extends AbstractPermissionManager implements List
             PermissibleBase original = (PermissibleBase) ReflectionUtil.getField(clazz, player, "perm");
             List<PermissionAttachment> attachments = (List<PermissionAttachment>) ReflectionUtil.getField(PermissibleBase.class, original, "attachments");
 
-            ReflectionUtil.setFinalField(PermissibleBase.class, newPermissible, "attachments", attachments);
+            ReflectionUtil.setField(PermissibleBase.class, newPermissible, "attachments", attachments);
 
-            ReflectionUtil.setFinalField(clazz, player, "perm", newPermissible);
+            ReflectionUtil.setField(clazz, player, "perm", newPermissible);
             newPermissible.recalculatePermissions();
 
             if (newPermissible instanceof PermissibleInterceptor) {
