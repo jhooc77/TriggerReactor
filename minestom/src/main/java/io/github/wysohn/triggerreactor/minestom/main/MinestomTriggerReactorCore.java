@@ -34,7 +34,10 @@ import io.github.wysohn.triggerreactor.minestom.manager.trigger.WalkTriggerListe
 import io.github.wysohn.triggerreactor.minestom.manager.trigger.share.MinestomCommonFunctions;
 import io.github.wysohn.triggerreactor.minestom.tools.LocationUtil;
 import io.github.wysohn.triggerreactor.tools.Lag;
+import net.kyori.adventure.text.logger.slf4j.ComponentLogger;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.minestom.server.MinecraftServer;
+import net.minestom.server.adventure.provider.MinestomLegacyComponentSerializerProvider;
 import net.minestom.server.command.CommandSender;
 import net.minestom.server.coordinate.Pos;
 import net.minestom.server.entity.Player;
@@ -50,9 +53,6 @@ import net.minestom.server.inventory.AbstractInventory;
 import net.minestom.server.item.ItemStack;
 import net.minestom.server.network.packet.server.play.BlockChangePacket;
 import net.minestom.server.timer.ExecutionType;
-import net.minestom.server.timer.Scheduler;
-import net.minestom.server.timer.Task;
-import net.minestom.server.timer.TaskSchedule;
 
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
@@ -60,9 +60,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -72,7 +72,7 @@ public class MinestomTriggerReactorCore extends TriggerReactorCore {
 
     public static MinestomWrapper wrapper;
 
-    private TriggerReactor extension;
+    private final TriggerReactor extension;
     private Logger logger;
     private ScriptEngineManager sem;
     private Lag tpsHelper;
@@ -98,6 +98,33 @@ public class MinestomTriggerReactorCore extends TriggerReactorCore {
 
     private boolean enable;
 
+    private class SimpleLogger extends Logger {
+
+        final ComponentLogger logger;
+        final LegacyComponentSerializer serializer;
+
+
+        protected SimpleLogger(ComponentLogger logger) {
+            super("TriggerReactor", null);
+            this.logger = logger;
+            serializer = new MinestomLegacyComponentSerializerProvider().legacySection();
+        }
+
+        @Override
+        public void log(LogRecord record) {
+            int level = record.getLevel().intValue();
+            if (level > 900) {
+                logger.error(record.getMessage());
+            } else if (level > 800) {
+                logger.warn(record.getMessage());
+            } else if (level > 700) {
+                logger.info(record.getMessage());
+            } else {
+                logger.info("[" + record.getLevel().getName() + "] " + record.getMessage());
+            }
+        }
+    }
+
     protected MinestomTriggerReactorCore(TriggerReactor extension) {
 
         enable = true;
@@ -108,8 +135,7 @@ public class MinestomTriggerReactorCore extends TriggerReactorCore {
 
         core = this;
         wrapper = new MinestomWrapper();
-        logger = Logger.getLogger(extension.getLogger().getName());
-
+        logger = new SimpleLogger(extension.getLogger());
         sem = new ScriptEngineManager();
 
         try {
